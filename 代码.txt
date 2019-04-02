@@ -1,0 +1,387 @@
+task1：
+巴特沃兹
+
+clear all;
+file_path = 'F:\数字图像处理作业\第5次作业\';% 图像文件夹路径 
+A=imread('test2.tif');%读取图像
+[M,N]=size(A);
+P=2*M;Q=2*N;
+F=fft2(A,P,Q);
+
+Fc=fftshift(F);
+S=log(1+abs(Fc));
+figure(1);
+subplot(1,3,1);imshow(A);title('原图');
+subplot(1,3,2);imshow(S,[]);title('图像的谱');
+subplot(1,3,3);mesh(S);title('透视图');
+
+D1=10;D2=50;D3=80;D4=100;n=1;
+B1=Butterworth(D1,n,P,Q);
+B2=Butterworth(D2,n,P,Q);
+B3=Butterworth(D3,n,P,Q);
+B4=Butterworth(D4,n,P,Q);
+figure(2);
+subplot(2,2,1);mesh(fftshift(B1));title(['一阶巴特沃兹透视图 D0 =',num2str(D1)]);
+subplot(2,2,2);mesh(fftshift(B2));title(['一阶巴特沃兹透视图 D0 =',num2str(D2)]);
+subplot(2,2,3);mesh(fftshift(B3));title(['一阶巴特沃兹透视图 D0 =',num2str(D3)]);
+subplot(2,2,4);mesh(fftshift(B4));title(['一阶巴特沃兹透视图 D0 =',num2str(D4)]);
+
+T1=F.*B1;
+T2=F.*B2;
+T3=F.*B3;
+T4=F.*B4;
+C1=fftshift(T1);S1=log(1+abs(C1));
+C2=fftshift(T2);S2=log(1+abs(C2));
+C3=fftshift(T3);S3=log(1+abs(C3));
+C4=fftshift(T4);S4=log(1+abs(C4));
+
+Pf=0;Pb1=0;Pb2=0;Pb3=0;Pb4=0;  %功率谱比
+for p = 1:P
+     for q = 1:Q
+         Pf=Pf+(abs(F(p,q)))^2;  % 由频域算出来的功率谱
+         Pb1=Pb1+(abs(T1(p,q)))^2;  
+         Pb2=Pb2+(abs(T2(p,q)))^2;  
+         Pb3=Pb3+(abs(T3(p,q)))^2;  
+         Pb4=Pb4+(abs(T4(p,q)))^2;  
+         L1=Pb1/Pf;
+         L2=Pb2/Pf;
+         L3=Pb3/Pf;
+         L4=Pb4/Pf;
+     end
+end
+
+t1=real(ifft2(T1)); t1=t1(1:M,1:N); 
+t2=real(ifft2(T2)); t2=t2(1:M,1:N); 
+t3=real(ifft2(T3)); t3=t3(1:M,1:N); 
+t4=real(ifft2(T4)); t4=t4(1:M,1:N); 
+
+figure(3);
+subplot(2,4,1);imshow(t1,[ ]);title(['一阶巴特沃兹滤波后 D0 =',num2str(D1),newline,'L = ',num2str(L1)]);
+subplot(2,4,2);imshow(t2,[ ]);title(['一阶巴特沃兹滤波后 D0 =',num2str(D2),newline,'L = ',num2str(L2)]);
+subplot(2,4,3);imshow(t3,[ ]);title(['一阶巴特沃兹滤波后 D0 =',num2str(D3),newline,'L = ',num2str(L3)]);
+subplot(2,4,4);imshow(t4,[ ]);title(['一阶巴特沃兹滤波后 D0 =',num2str(D4),newline,'L = ',num2str(L4)]);
+subplot(2,4,5);mesh(S1);title(['滤波后透视图',newline,'D0 =',num2str(D1)]);
+subplot(2,4,6);mesh(S2);title(['滤波后透视图',newline,'D0 =',num2str(D2)]);
+subplot(2,4,7);mesh(S3);title(['滤波后透视图',newline,'D0 =',num2str(D3)]);
+subplot(2,4,8);mesh(S4);title(['滤波后透视图',newline,'D0 =',num2str(D4)]);
+
+function Butter=Butterworth(D0,n,P,Q)
+[U,V]=dftuv(P,Q);
+D=hypot(U,V);
+Butter =1 ./ (1 + (D./ D0) .^ (2 * n));
+end
+
+function [U,V] = dftuv(M, N)
+u = single(0:(M - 1));
+v = single(0:(N - 1));
+idx = find(u > M/2);                   
+u(idx) = u(idx) - M;                    
+idy = find(v > N/2);
+v(idy) = v(idy) - N;
+[V, U] = meshgrid(v, u);  
+end
+
+task2：
+高斯
+
+clear all;
+file_path = 'F:\数字图像处理作业\第5次作业\';% 图像文件夹路径 
+A=imread('test2.tif');%读取图像
+[M,N]=size(A);
+P=2*M;Q=2*N;
+F=fft2(A,P,Q);
+
+Fc=fftshift(F);
+S=log(1+abs(Fc));
+figure(1);
+subplot(1,3,1);imshow(A);title('原图');
+subplot(1,3,2);imshow(S,[]);title('图像的谱');
+subplot(1,3,3);mesh(S);title('透视图');
+
+D1=10;D2=50;D3=80;D4=100;
+B1=Butterworth(D1,P,Q);
+B2=Butterworth(D2,P,Q);
+B3=Butterworth(D3,P,Q);
+B4=Butterworth(D4,P,Q);
+figure(2);
+subplot(2,2,1);mesh(fftshift(B1));title(['高斯滤波器透视图 D0 =',num2str(D1)]);
+subplot(2,2,2);mesh(fftshift(B2));title(['高斯滤波器透视图 D0 =',num2str(D2)]);
+subplot(2,2,3);mesh(fftshift(B3));title(['高斯滤波器透视图 D0 =',num2str(D3)]);
+subplot(2,2,4);mesh(fftshift(B4));title(['高斯滤波器透视图 D0 =',num2str(D4)]);
+
+T1=F.*B1;
+T2=F.*B2;
+T3=F.*B3;
+T4=F.*B4;
+C1=fftshift(T1);S1=log(1+abs(C1));
+C2=fftshift(T2);S2=log(1+abs(C2));
+C3=fftshift(T3);S3=log(1+abs(C3));
+C4=fftshift(T4);S4=log(1+abs(C4));
+
+Pf=0;Pb1=0;Pb2=0;Pb3=0;Pb4=0;
+for p = 1:P
+     for q = 1:Q
+         Pf=Pf+(abs(F(p,q)))^2;  % 由频域算出来的功率谱
+         Pb1=Pb1+(abs(T1(p,q)))^2;  
+         Pb2=Pb2+(abs(T2(p,q)))^2;  
+         Pb3=Pb3+(abs(T3(p,q)))^2;  
+         Pb4=Pb4+(abs(T4(p,q)))^2;  
+         L1=Pb1/Pf;
+         L2=Pb2/Pf;
+         L3=Pb3/Pf;
+         L4=Pb4/Pf;
+     end
+end
+
+t1=real(ifft2(T1)); t1=t1(1:M,1:N); 
+t2=real(ifft2(T2)); t2=t2(1:M,1:N); 
+t3=real(ifft2(T3)); t3=t3(1:M,1:N); 
+t4=real(ifft2(T4)); t4=t4(1:M,1:N); 
+
+figure(3);
+subplot(2,4,1);imshow(t1,[ ]);title(['高斯滤波器滤波后 D0 =',num2str(D1),newline,'L = ',num2str(L1)]);
+subplot(2,4,2);imshow(t2,[ ]);title(['高斯滤波器滤波后 D0 =',num2str(D2),newline,'L = ',num2str(L2)]);
+subplot(2,4,3);imshow(t3,[ ]);title(['高斯滤波器滤波后 D0 =',num2str(D3),newline,'L = ',num2str(L3)]);
+subplot(2,4,4);imshow(t4,[ ]);title(['高斯滤波器滤波后 D0 =',num2str(D4),newline,'L = ',num2str(L4)]);
+subplot(2,4,5);mesh(S1);title(['滤波后透视图',newline,'D0 =',num2str(D1)]);
+subplot(2,4,6);mesh(S2);title(['滤波后透视图',newline,'D0 =',num2str(D2)]);
+subplot(2,4,7);mesh(S3);title(['滤波后透视图',newline,'D0 =',num2str(D3)]);
+subplot(2,4,8);mesh(S4);title(['滤波后透视图',newline,'D0 =',num2str(D4)]);
+
+function Butter=Butterworth(D0,P,Q)
+[U,V]=dftuv(P,Q);
+D=hypot(U,V);
+Butter =exp(-D.^2/2/D0^2);
+end
+function [U,V] = dftuv(M, N)
+u = single(0:(M - 1));
+v = single(0:(N - 1));
+idx = find(u > M/2);                   
+u(idx) = u(idx) - M;                    
+idy = find(v > N/2);
+v(idy) = v(idy) - N;
+[V, U] = meshgrid(v, u);  
+end
+
+task2:
+巴特沃兹
+
+clear all;
+file_path = 'F:\数字图像处理作业\第5次作业\';% 图像文件夹路径 
+A=imread('test4 copy.bmp');%读取图像
+[M,N]=size(A);
+P=2*M;Q=2*N;
+F=fft2(A,P,Q);
+
+Fc=fftshift(F);
+S=log(1+abs(Fc));
+figure(1);
+subplot(1,3,1);imshow(A);title('原图');
+subplot(1,3,2);imshow(S,[]);title('图像的谱');
+subplot(1,3,3);mesh(S);title('透视图');
+
+D1=10;D2=50;D3=80;D4=100;n=1;
+B1=Butterworth(D1,n,P,Q);
+B2=Butterworth(D2,n,P,Q);
+B3=Butterworth(D3,n,P,Q);
+B4=Butterworth(D4,n,P,Q);
+figure(2);
+subplot(2,2,1);mesh(fftshift(B1));title(['一阶巴特沃兹透视图 D0 =',num2str(D1)]);
+subplot(2,2,2);mesh(fftshift(B2));title(['一阶巴特沃兹透视图 D0 =',num2str(D2)]);
+subplot(2,2,3);mesh(fftshift(B3));title(['一阶巴特沃兹透视图 D0 =',num2str(D3)]);
+subplot(2,2,4);mesh(fftshift(B4));title(['一阶巴特沃兹透视图 D0 =',num2str(D4)]);
+
+T1=F.*B1;
+T2=F.*B2;
+T3=F.*B3;
+T4=F.*B4;
+C1=fftshift(T1);S1=log(1+abs(C1));
+C2=fftshift(T2);S2=log(1+abs(C2));
+C3=fftshift(T3);S3=log(1+abs(C3));
+C4=fftshift(T4);S4=log(1+abs(C4));
+
+Pf=0;Pb1=0;Pb2=0;Pb3=0;Pb4=0;
+for p = 1:P
+     for q = 1:Q
+         Pf=Pf+(abs(F(p,q)))^2;  % 由频域算出来的功率谱
+         Pb1=Pb1+(abs(T1(p,q)))^2;  
+         Pb2=Pb2+(abs(T2(p,q)))^2;  
+         Pb3=Pb3+(abs(T3(p,q)))^2;  
+         Pb4=Pb4+(abs(T4(p,q)))^2;  
+         L1=Pb1/Pf;
+         L2=Pb2/Pf;
+         L3=Pb3/Pf;
+         L4=Pb4/Pf;
+     end
+end
+
+t1=real(ifft2(T1)); t1=t1(1:M,1:N); 
+t2=real(ifft2(T2)); t2=t2(1:M,1:N); 
+t3=real(ifft2(T3)); t3=t3(1:M,1:N); 
+t4=real(ifft2(T4)); t4=t4(1:M,1:N); 
+
+figure(3);
+subplot(2,4,1);imshow(t1,[ ]);title(['一阶巴特沃兹滤波后 D0 =',num2str(D1),newline,'L = ',num2str(L1)]);
+subplot(2,4,2);imshow(t2,[ ]);title(['一阶巴特沃兹滤波后 D0 =',num2str(D2),newline,'L = ',num2str(L2)]);
+subplot(2,4,3);imshow(t3,[ ]);title(['一阶巴特沃兹滤波后 D0 =',num2str(D3),newline,'L = ',num2str(L3)]);
+subplot(2,4,4);imshow(t4,[ ]);title(['一阶巴特沃兹滤波后 D0 =',num2str(D4),newline,'L = ',num2str(L4)]);
+subplot(2,4,5);mesh(S1);title(['滤波后透视图',newline,'D0 =',num2str(D1)]);
+subplot(2,4,6);mesh(S2);title(['滤波后透视图',newline,'D0 =',num2str(D2)]);
+subplot(2,4,7);mesh(S3);title(['滤波后透视图',newline,'D0 =',num2str(D3)]);
+subplot(2,4,8);mesh(S4);title(['滤波后透视图',newline,'D0 =',num2str(D4)]);
+
+function Butter=Butterworth(D0,n,P,Q)
+[U,V]=dftuv(P,Q);
+D=hypot(U,V);
+Butter =1 ./ (1 + (D0./ D) .^ (2 * n));
+end
+function [U,V] = dftuv(M, N)
+u = single(0:(M - 1));
+v = single(0:(N - 1));
+idx = find(u > M/2);                   
+u(idx) = u(idx) - M;                    
+idy = find(v > N/2);
+v(idy) = v(idy) - N;
+[V, U] = meshgrid(v, u);  
+end
+
+task2：
+高斯
+
+clear all;
+file_path = 'F:\数字图像处理作业\第5次作业\';% 图像文件夹路径 
+A=imread('test4 copy.bmp');%读取图像
+[M,N]=size(A);
+P=2*M;Q=2*N;
+F=fft2(A,P,Q);
+
+Fc=fftshift(F);
+S=log(1+abs(Fc));
+figure(1);
+subplot(1,3,1);imshow(A);title('原图');
+subplot(1,3,2);imshow(S,[]);title('图像的谱');
+subplot(1,3,3);mesh(S);title('透视图');
+
+D1=10;D2=50;D3=80;D4=100;
+B1=Butterworth(D1,P,Q);
+B2=Butterworth(D2,P,Q);
+B3=Butterworth(D3,P,Q);
+B4=Butterworth(D4,P,Q);
+figure(2);
+subplot(2,2,1);mesh(fftshift(B1));title(['高斯滤波器透视图 D0 =',num2str(D1)]);
+subplot(2,2,2);mesh(fftshift(B2));title(['高斯滤波器透视图 D0 =',num2str(D2)]);
+subplot(2,2,3);mesh(fftshift(B3));title(['高斯滤波器透视图 D0 =',num2str(D3)]);
+subplot(2,2,4);mesh(fftshift(B4));title(['高斯滤波器透视图 D0 =',num2str(D4)]);
+
+T1=F.*B1;
+T2=F.*B2;
+T3=F.*B3;
+T4=F.*B4;
+C1=fftshift(T1);S1=log(1+abs(C1));
+C2=fftshift(T2);S2=log(1+abs(C2));
+C3=fftshift(T3);S3=log(1+abs(C3));
+C4=fftshift(T4);S4=log(1+abs(C4));
+
+Pf=0;Pb1=0;Pb2=0;Pb3=0;Pb4=0;
+for p = 1:P
+     for q = 1:Q
+         Pf=Pf+(abs(F(p,q)))^2;  % 由频域算出来的功率谱
+         Pb1=Pb1+(abs(T1(p,q)))^2;  
+         Pb2=Pb2+(abs(T2(p,q)))^2;  
+         Pb3=Pb3+(abs(T3(p,q)))^2;  
+         Pb4=Pb4+(abs(T4(p,q)))^2;  
+         L1=Pb1/Pf;
+         L2=Pb2/Pf;
+         L3=Pb3/Pf;
+         L4=Pb4/Pf;
+     end
+end
+
+t1=real(ifft2(T1)); t1=t1(1:M,1:N); 
+t2=real(ifft2(T2)); t2=t2(1:M,1:N); 
+t3=real(ifft2(T3)); t3=t3(1:M,1:N); 
+t4=real(ifft2(T4)); t4=t4(1:M,1:N); 
+
+figure(3);
+subplot(2,4,1);imshow(t1,[ ]);title(['高斯滤波器滤波后 D0 =',num2str(D1),newline,'L = ',num2str(L1)]);
+subplot(2,4,2);imshow(t2,[ ]);title(['高斯滤波器滤波后 D0 =',num2str(D2),newline,'L = ',num2str(L2)]);
+subplot(2,4,3);imshow(t3,[ ]);title(['高斯滤波器滤波后 D0 =',num2str(D3),newline,'L = ',num2str(L3)]);
+subplot(2,4,4);imshow(t4,[ ]);title(['高斯滤波器滤波后 D0 =',num2str(D4),newline,'L = ',num2str(L4)]);
+subplot(2,4,5);mesh(S1);title(['滤波后透视图',newline,'D0 =',num2str(D1)]);
+subplot(2,4,6);mesh(S2);title(['滤波后透视图',newline,'D0 =',num2str(D2)]);
+subplot(2,4,7);mesh(S3);title(['滤波后透视图',newline,'D0 =',num2str(D3)]);
+subplot(2,4,8);mesh(S4);title(['滤波后透视图',newline,'D0 =',num2str(D4)]);
+
+function Butter=Butterworth(D0,P,Q)
+[U,V]=dftuv(P,Q);
+D=hypot(U,V);
+Butter =1-exp(-D.^2/2/D0^2);
+end
+function [U,V] = dftuv(M, N)
+u = single(0:(M - 1));
+v = single(0:(N - 1));
+idx = find(u > M/2);                   
+u(idx) = u(idx) - M;                    
+idy = find(v > N/2);
+v(idy) = v(idy) - N;
+[V, U] = meshgrid(v, u);  
+end
+
+
+task3：
+
+clear all;
+file_path = 'F:\数字图像处理作业\第5次作业\';% 图像文件夹路径 
+A=imread('test3_corrupt.pgm');%读取图像
+[M,N]=size(A);
+P=2*M;Q=2*N;
+F=fft2(A,P,Q);
+
+Fc=fftshift(F);
+S=log(1+abs(Fc));
+figure(1);
+subplot(1,3,1);imshow(A);title('原图');
+subplot(1,3,2);imshow(S,[]);title('图像的谱');
+subplot(1,3,3);mesh(S);title('透视图');
+
+k=1;
+L=Lap(P,Q);
+U=unmask(P,Q,k);
+figure(2);
+subplot(1,2,1);mesh(abs(fftshift(L)));title('拉普拉斯滤波器透视图');
+subplot(1,2,2);mesh(abs(fftshift(U)));title('unmask透视图');
+
+
+T1=F.*L;
+C1=fftshift(T1);S1=log(1+abs(C1));
+t1=real(ifft2(T1)); t1=t1(1:M,1:N); 
+
+T2=F.*U;
+C2=fftshift(T2);S2=log(1+abs(C1));
+t2=real(ifft2(T2)); t2=t2(1:M,1:N); 
+
+figure(3);
+subplot(2,2,1);imshow(t1,[ ]);title('拉普拉斯滤波后');
+subplot(2,2,3);mesh(S1);title('滤波后透视图');
+subplot(2,2,2);imshow(t2,[ ]);title('unmask滤波后');
+subplot(2,2,4);mesh(S2);title('滤波后透视图');
+
+function Butter=Lap(P,Q)
+[U,V]=dftuv(P,Q);
+D=hypot(U,V);
+Butter =-4*pi*pi*D.^2;
+end
+function Butter=unmask(P,Q,k)
+[U,V]=dftuv(P,Q);
+D=hypot(U,V);
+Butter =1+k*(1 ./ (1 + (0.95*P./D).^2));
+end
+function [U,V] = dftuv(M, N)
+u = single(0:(M - 1));
+v = single(0:(N - 1));
+idx = find(u > M/2);                   
+u(idx) = u(idx) - M;                    
+idy = find(v > N/2);
+v(idy) = v(idy) - N;
+[V, U] = meshgrid(v, u);  
+end
